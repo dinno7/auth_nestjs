@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  db:
+    image: postgres
+    container_name: postgresql_container
+    restart: always
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: dinno
+      POSTGRES_PASSWORD: 1234567
+    volumes:
+      - postgresal_data:/var/lib/postgresql/data
+
+volumes:
+  postgresal_data:
