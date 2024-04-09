@@ -8,7 +8,7 @@ import { ZodModule } from './zod/zod.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: `.env.${process.env.NODE_ENV || ''}`,
+      envFilePath: `.env${process.env.NODE_ENV ? '.' + process.env.NODE_ENV : ''}`,
     }),
     PrismaModule,
     IamModule,
