@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { IamModule } from './iam/iam.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { RedisModule } from './redis/redis.module';
 import { UsersModule } from './users/users.module';
 import { ZodModule } from './zod/zod.module';
 
@@ -14,6 +15,7 @@ import { ZodModule } from './zod/zod.module';
     IamModule,
     UsersModule,
     ZodModule,
+    RedisModule,
   ],
   controllers: [],
   providers: [],

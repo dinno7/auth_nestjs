@@ -6,11 +6,16 @@ import {
 } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { randomUUID } from 'crypto';
+import { RedisService } from 'src/redis/redis.service';
 import { UsersService } from 'src/users/users.service';
 import jwtConfig from '../configs/jwt.config';
 import { HashingService } from '../hashing/hashing.service';
+import { RefreshTokenDto } from './dtos/refresh-token.dto';
 import { SignInDto } from './dtos/sign-in.dto';
 import { SignUpDto } from './dtos/sign-up.dto';
+import { InvalidRefreshTokenException } from './exceptions/invalid-refresh-token.exeption';
+import { RefreshTokenPayload } from './types/token-payload.type';
 
 @Injectable()
 export class AuthenticationService {
@@ -18,6 +23,7 @@ export class AuthenticationService {
     @Inject(jwtConfig.KEY)
     private readonly jwtConfigurations: ConfigType<typeof jwtConfig>,
 
+    private readonly redisService: RedisService,
     private readonly jwtService: JwtService,
     private readonly hashingService: HashingService,
     private readonly userService: UsersService,
@@ -50,7 +56,7 @@ export class AuthenticationService {
     );
     if (!isPasswordValid) throw new BadRequestException(errorMsg);
 
-    const { accessToken, refreshToken } = await this.generateTokens(user.id);
+    const { accessToken, refreshToken } = await this.__generateTokens(user.id);
 
     return {
       accessToken,
@@ -58,7 +64,46 @@ export class AuthenticationService {
     };
   }
 
-  private signToken<P extends Record<string, unknown> | Buffer>(
+  async refreshToken({ refreshToken: receivedToken }: RefreshTokenDto) {
+    try {
+      const {
+        type,
+        tokenId,
+        id: userId,
+      } = (await this.jwtService.verifyAsync(receivedToken, {
+        secret: this.jwtConfigurations.refreshTokenSecret,
+        audience: this.jwtConfigurations.audience,
+        issuer: this.jwtConfigurations.issuer,
+      })) as RefreshTokenPayload;
+
+      if (type !== 'refresh') throw new Error();
+
+      const user = await this.userService.getUserById(userId);
+      if (!user) throw new Error();
+
+      const isRefreshTokenValid = await this.redisService.validate(
+        tokenId,
+        receivedToken,
+      );
+
+      // -> It's mean one malicious user will try to use refresh token(Auto Reuse Detection)
+      if (!isRefreshTokenValid)
+        throw new InvalidRefreshTokenException('Access denied');
+
+      // -> Just sure that refresh token will be remove successfully
+      if (!(await this.redisService.remove(tokenId))) throw new Error();
+
+      return this.__generateTokens(userId);
+    } catch (err) {
+      if (err instanceof InvalidRefreshTokenException) {
+        //-> Notify user that refresh token was stolen and get hacked
+        throw err;
+      }
+      throw new BadRequestException('Invalid refresh token');
+    }
+  }
+
+  private __signToken<P extends Record<string, unknown> | Buffer>(
     secret: string,
     expiresIn: number,
     payload: P,
@@ -71,12 +116,14 @@ export class AuthenticationService {
     });
   }
 
-  private async generateTokens(userId: string): Promise<{
+  private async __generateTokens(userId: string): Promise<{
     accessToken: string;
     refreshToken: string;
   }> {
+    const refreshTokenId = `user_${randomUUID()}`;
+
     const [accessToken, refreshToken] = await Promise.all([
-      this.signToken(
+      this.__signToken(
         this.jwtConfigurations.secret,
         this.jwtConfigurations.accessTtl,
         {
@@ -84,17 +131,19 @@ export class AuthenticationService {
           id: userId,
         },
       ),
-      this.signToken(
-        this.jwtConfigurations.secret,
-        this.jwtConfigurations.accessTtl,
+      this.__signToken(
+        this.jwtConfigurations.refreshTokenSecret,
+        this.jwtConfigurations.refreshTtl,
         {
           type: 'refresh',
           id: userId,
+          tokenId: refreshTokenId,
         },
       ),
     ]);
 
-    // TODO: Add refresh token rotation
+    // -> Add refresh token to memory for refresh token aut
+    this.redisService.insert(refreshTokenId, refreshToken);
 
     return {
       accessToken,
