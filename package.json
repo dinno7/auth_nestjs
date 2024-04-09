@@ -30,8 +30,10 @@
     "@prisma/client": "^5.12.1",
     "@types/bcrypt": "^5.0.2",
     "bcrypt": "^5.1.1",
+    "nestjs-zod": "^3.0.0",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
