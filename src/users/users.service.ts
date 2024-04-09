@@ -17,13 +17,10 @@ export class UsersService {
 
   async createUser(user: Prisma.UserCreateInput) {
     const existUser = await this.getUserByEmail(user.email);
-    if (existUser) {
-      throw new BadRequestException('This user exist');
-    }
+    if (existUser) throw new BadRequestException('This user exist');
+
     return this.prisma.user.create({
-      data: {
-        ...user,
-      },
+      data: user,
     });
   }
 
