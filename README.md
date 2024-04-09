@@ -23,12 +23,13 @@
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
 ## Description
-
 Best practice Authentication & Authorization implementation
-### Stack:
+
+## Stack:
   -  NestJs
   -  Prisma as ORM
   -  Zod for input validation
+  -  JWT tokens(Access & Refresh tokens)
   -  Redis for auto-detection refresh token system
 
 ## Installation
