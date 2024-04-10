@@ -112,10 +112,10 @@ export class DinnoController {
 
 There is 3 type of Auth types:
 
-```
-AuthTypes.None
-AuthTypes.Bearer // -> Appended to all routes by default
-AuthTypes.ApiKey
+```typescript
+AuthTypes.None;
+AuthTypes.Bearer; // -> Appended to all routes by default
+AuthTypes.ApiKey;
 ```
 
 <!-- `@Auth(AuthTypes.Bearer)` -->
