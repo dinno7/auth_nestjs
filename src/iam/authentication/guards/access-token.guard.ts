@@ -38,11 +38,14 @@ export class AccessTokenGuard implements CanActivate {
       );
       if (type !== 'access') throw new Error();
       const user = await this.userService.getUserById(id);
+      // ? Check if user still exist
       if (!user) throw new Error();
+
+      // TODO: Check if user changed password after the token was issued
 
       req[REQUEST_USER_KEY] = user;
     } catch (error) {
-      throw new UnauthorizedException(error?.message || 'Invalid access token');
+      throw new UnauthorizedException('Invalid access token');
     }
 
     return true;
