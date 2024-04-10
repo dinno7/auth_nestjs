@@ -40,7 +40,7 @@ export class AuthenticationService {
 
     return this.userService.createUser({
       name: signUpDto.name,
-      email: signUpDto.email,
+      email: signUpDto.email?.toLowerCase(),
       password: hashedPassword,
     });
   }
@@ -64,17 +64,45 @@ export class AuthenticationService {
     };
   }
 
+  async signOut(refreshToken: string) {
+    try {
+      const {
+        type,
+        tokenId,
+        id: userId,
+      } = <RefreshTokenPayload>await this.jwtService.verifyAsync(refreshToken, {
+        secret: this.jwtConfigurations.refreshTokenSecret,
+        audience: this.jwtConfigurations.audience,
+        issuer: this.jwtConfigurations.issuer,
+      });
+
+      if (type !== 'refresh') throw new Error();
+
+      const user = await this.userService.getUserById(userId);
+      if (!user) throw new Error();
+
+      if (!(await this.redisService.remove(tokenId))) throw new Error();
+
+      return true;
+    } catch (error) {
+      throw new BadRequestException('Invalid refresh token');
+    }
+  }
+
   async refreshToken({ refreshToken: receivedToken }: RefreshTokenDto) {
     try {
       const {
         type,
         tokenId,
         id: userId,
-      } = (await this.jwtService.verifyAsync(receivedToken, {
-        secret: this.jwtConfigurations.refreshTokenSecret,
-        audience: this.jwtConfigurations.audience,
-        issuer: this.jwtConfigurations.issuer,
-      })) as RefreshTokenPayload;
+      } = <RefreshTokenPayload>await this.jwtService.verifyAsync(
+        receivedToken,
+        {
+          secret: this.jwtConfigurations.refreshTokenSecret,
+          audience: this.jwtConfigurations.audience,
+          issuer: this.jwtConfigurations.issuer,
+        },
+      );
 
       if (type !== 'refresh') throw new Error();
 
