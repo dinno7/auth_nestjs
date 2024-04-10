@@ -3,6 +3,7 @@ import { AuthenticationService } from './authentication.service';
 import { Auth } from './decorators/auth.decorator';
 import { RefreshTokenDto } from './dtos/refresh-token.dto';
 import { SignInDto } from './dtos/sign-in.dto';
+import { SignOutDto } from './dtos/sign-out.dto';
 import { SignUpDto } from './dtos/sign-up.dto';
 import { AuthTypes } from './types/auth-type.type';
 
@@ -20,6 +21,11 @@ export class AuthenticationController {
   @HttpCode(HttpStatus.OK)
   signIn(@Body() signInDto: SignInDto) {
     return this.authService.signIn(signInDto);
+  }
+
+  @Post('signout')
+  signOut(@Body() { refreshToken }: SignOutDto) {
+    return this.authService.signOut(refreshToken);
   }
 
   @Post('refresh')
