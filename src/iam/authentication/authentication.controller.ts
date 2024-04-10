@@ -29,7 +29,13 @@ export class AuthenticationController {
   }
 
   @Post('refresh')
+  @Auth(AuthTypes.None)
   refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
     return this.authService.refreshToken(refreshTokenDto);
+  }
+
+  @Post('forgot-password')
+  forgotPassword(@Body() password: string) {
+    // TODO: Implement forgot password
   }
 }
