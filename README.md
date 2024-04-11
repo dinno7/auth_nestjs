@@ -53,7 +53,7 @@ if you are not installed and run them you can use `docker-compose.yml` file whic
 $ docker compose up -d
 ```
 
-> You can run separatly too by below command:
+> You can run separatly by below command too:
 >
 > ```bash
 > $ docker compose up -d redis
