@@ -8,11 +8,11 @@ export class UsersService {
   getAll(): Promise<User[]> {
     return this.prisma.user.findMany();
   }
-  getUserById(id: string): Promise<User> {
-    return this.prisma.user.findUnique({ where: { id } });
+  getUserById(id: string, include?: Prisma.UserInclude) {
+    return this.prisma.user.findUnique({ where: { id }, include });
   }
-  getUserByEmail(email: string): Promise<User> {
-    return this.prisma.user.findUnique({ where: { email } });
+  getUserByEmail(email: string, include?: Prisma.UserInclude) {
+    return this.prisma.user.findUnique({ where: { email }, include });
   }
 
   async createUser(user: Prisma.UserCreateInput) {

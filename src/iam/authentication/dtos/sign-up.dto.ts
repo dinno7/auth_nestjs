@@ -7,7 +7,8 @@ const signUpSchema = z.object({
   }),
   email: z
     .string({ required_error: 'is required' })
-    .email({ message: 'is invalid' }),
+    .email({ message: 'is invalid' })
+    .transform((value) => value.toLowerCase()),
   password: z
     .password({ required_error: 'is required' })
     .atLeastOne('digit', 'need at least one digit'),
