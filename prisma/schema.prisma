@@ -14,8 +14,27 @@ datasource db {
 }
 
 model User {
-  id       String @id @default(uuid())
-  name     String
-  email    String @unique
-  password String
+  id                String          @id @default(uuid())
+  name              String
+  email             String          @unique
+  password          String
+  passwordUpdatedAt DateTime?
+  forgotPassword    ForgotPassword?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([email])
+}
+
+model ForgotPassword {
+  id      String   @id @default(uuid())
+  token   String   @unique
+  // Set expire 10 mins after generated token time by default
+  expires DateTime @default(dbgenerated("NOW() + interval '10 minutes'"))
+  user    User     @relation(fields: [userId], references: [id])
+  userId  String   @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
