@@ -1,12 +1,15 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
+<p align="center" style="display:flex;align-items: center;justify-content: center;gap: 30px">
+  <a href="http://nestjs.com/" target="blank"><img src="https://api.iconify.design/logos:nestjs.svg" width="150" alt="Nest Logo" /></a>
+  +
+  <a href="http://nestjs.com/" target="blank"><img src="https://api.iconify.design/devicon:oauth.svg" width="150" alt="OAuth2 Logo" /></a>
+
 </p>
 
 [circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
 [circleci-url]: https://circleci.com/gh/nestjs/nest
 
-  <p align="center">NestJs is a progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
+  <p align="center">Best practice Authentication & Authorization implementation</p>
+  <p align="center">
 <a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
 <a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
 <a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
@@ -19,14 +22,11 @@
     <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
   <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
 </p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
 ## Navigation
 
 - [Navigation](#navigation)
-- [Description](#description)
-- [Stack:](#stack)
+- [What we have here?](#what-we-have-here)
 - [Installation](#installation)
 - [Running the app](#running-the-app)
 - [Test](#test)
@@ -36,11 +36,7 @@
 - [Support](#support)
 - [License](#license)
 
-## Description
-
-Best practice Authentication & Authorization implementation
-
-## Stack:
+## What we have here?
 
 - NestJs
 - Prisma as ORM
@@ -49,6 +45,22 @@ Best practice Authentication & Authorization implementation
 - Redis for auto-detection refresh token system
 
 ## Installation
+
+You need to install and run postgresql as database and redis for auto detection refresh token system.
+if you are not installed and run them you can use `docker-compose.yml` file which i provide it for you:
+
+```bash
+$ docker compose up -d
+```
+
+> You can run separatly too by below command:
+>
+> ```bash
+> $ docker compose up -d redis
+> $ docker compose up -d db
+> ```
+
+**Run above command just if you do not have postgres & redis on your system.**
 
 ```bash
 $ git clone https://github.com/dinno7/auth_nestjs
