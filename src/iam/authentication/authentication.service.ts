@@ -1,17 +1,24 @@
 import {
   BadRequestException,
+  HttpException,
   Inject,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'crypto';
+import { MailService } from 'src/mail/mail.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { RedisService } from 'src/redis/redis.service';
+import { ForgotPasswordService } from 'src/users/forgot-password/forgot-password.service';
 import { UsersService } from 'src/users/users.service';
 import jwtConfig from '../configs/jwt.config';
 import { HashingService } from '../hashing/hashing.service';
+import { ReceiveUserEmailDto } from './dtos/receive-user-email.dto';
 import { RefreshTokenDto } from './dtos/refresh-token.dto';
+import { ResetPasswordDto } from './dtos/reset-password.dto';
 import { SignInDto } from './dtos/sign-in.dto';
 import { SignUpDto } from './dtos/sign-up.dto';
 import { InvalidRefreshTokenException } from './exceptions/invalid-refresh-token.exeption';
@@ -22,7 +29,9 @@ export class AuthenticationService {
   constructor(
     @Inject(jwtConfig.KEY)
     private readonly jwtConfigurations: ConfigType<typeof jwtConfig>,
-
+    private readonly forgotPasswordService: ForgotPasswordService,
+    private readonly prisma: PrismaService,
+    private readonly mailService: MailService,
     private readonly redisService: RedisService,
     private readonly jwtService: JwtService,
     private readonly hashingService: HashingService,
@@ -38,11 +47,13 @@ export class AuthenticationService {
 
     const hashedPassword = await this.hashingService.hash(signUpDto.password);
 
-    return this.userService.createUser({
+    const user = await this.userService.createUser({
       name: signUpDto.name,
-      email: signUpDto.email?.toLowerCase(),
+      email: signUpDto.email,
       password: hashedPassword,
     });
+
+    return this.__generateTokens(user.id);
   }
   async signIn(signInDto: SignInDto) {
     const errorMsg = 'This email and password combination is not valid';
@@ -128,6 +139,83 @@ export class AuthenticationService {
         throw err;
       }
       throw new BadRequestException('Invalid refresh token');
+    }
+  }
+
+  async forgetPassword({ email }: ReceiveUserEmailDto) {
+    try {
+      const user = await this.userService.getUserByEmail(email);
+      if (!user)
+        throw new NotFoundException(
+          `User with this email(${email}) was not found`,
+        );
+
+      const resetToken = Buffer.from(`${user.id}.${randomUUID()}`).toString(
+        'base64',
+      );
+      const resetPasswordUrl = `http://localhost:3000/reset-password/${resetToken}`;
+
+      const hashedToken = await this.hashingService.hash(resetToken);
+
+      await this.forgotPasswordService.upsert(user.id, hashedToken);
+
+      setImmediate(async () => {
+        await this.mailService.send({
+          to: user.email,
+          subject: 'Reset your password',
+          html: 'forgot-password',
+          htmlInput: {
+            userName: user.name,
+            resetPasswordUrl,
+          },
+        });
+      });
+      return `We sent reset password url to your email(${user.email}), Check your email and follow the instruction`;
+    } catch (error) {
+      console.log(`✨ `, error);
+      if (error instanceof HttpException) throw error;
+      throw new InternalServerErrorException('Something went wrong');
+    }
+  }
+  async resetPassword({ token, password }: ResetPasswordDto) {
+    try {
+      const [userId] = Buffer.from(token, 'base64').toString('utf8').split('.');
+
+      const user = await this.userService.getUserById(userId, {
+        forgotPassword: { select: { expires: true, token: true } },
+      });
+      if (!user) throw new Error();
+
+      const userResetPasswordHashed = user.forgotPassword?.token;
+      if (!userResetPasswordHashed) throw new Error();
+      const isResetLinkExpires = this.forgotPasswordService.isExpires(
+        user.forgotPassword,
+      );
+      const isResetTokenValid = await this.hashingService.compare(
+        token,
+        userResetPasswordHashed,
+      );
+
+      if (!isResetTokenValid) throw new Error();
+      if (isResetLinkExpires) throw new Error('Reset password url is expires');
+
+      // -> User password should be change here:
+      const newUserHashedPassword = await this.hashingService.hash(password);
+      await this.prisma.$transaction([
+        // > Update user password
+        this.userService.updateUser(user.id, {
+          password: newUserHashedPassword,
+          passwordUpdatedAt: new Date(),
+        }),
+        // > Remove related Forgot password:
+        this.forgotPasswordService.deleteByUserId(user.id),
+      ]);
+
+      return 'User password updated successfully';
+    } catch (error) {
+      throw new BadRequestException(
+        error?.message?.length ? error.message : 'Reset token is not valid',
+      );
     }
   }
 

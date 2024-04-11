@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
+import { MailModule } from 'src/mail/mail.module';
 import { RedisModule } from 'src/redis/redis.module';
 import { UsersModule } from 'src/users/users.module';
 import { AuthenticationController } from './authentication/authentication.controller';
@@ -18,6 +19,7 @@ import { HashingService } from './hashing/hashing.service';
     JwtModule.registerAsync(jwtConfig.asProvider()),
     UsersModule,
     RedisModule,
+    MailModule,
   ],
   providers: [
     {
