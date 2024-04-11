@@ -27,9 +27,7 @@ export class UsersService {
   updateUser(id: string, data: Prisma.UserUpdateInput) {
     return this.prisma.user.update({
       where: { id },
-      data: {
-        ...data,
-      },
+      data,
     });
   }
 
