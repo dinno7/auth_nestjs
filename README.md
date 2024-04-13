@@ -9,6 +9,9 @@
 [circleci-url]: https://circleci.com/gh/nestjs/nest
 
   <p align="center">Best practice Authentication & Authorization implementation</p>
+  
+---
+
 ## Navigation
 
 - [Navigation](#navigation)
