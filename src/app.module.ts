@@ -7,6 +7,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { RedisModule } from './redis/redis.module';
 import { UsersModule } from './users/users.module';
 import { ZodModule } from './zod/zod.module';
+import { CatsModule } from './cats/cats.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ZodModule } from './zod/zod.module';
     RedisModule,
     CommonModule,
     MailModule,
+    CatsModule,
   ],
   controllers: [],
   providers: [],
