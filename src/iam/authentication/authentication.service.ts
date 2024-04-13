@@ -160,19 +160,25 @@ export class AuthenticationService {
       await this.forgotPasswordService.upsert(user.id, hashedToken);
 
       setImmediate(async () => {
-        await this.mailService.send({
-          to: user.email,
-          subject: 'Reset your password',
-          html: 'forgot-password',
-          htmlInput: {
-            userName: user.name,
-            resetPasswordUrl,
-          },
-        });
+        await this.mailService
+          .send({
+            to: user.email,
+            subject: 'Reset your password',
+            html: 'forgot-password',
+            htmlInput: {
+              userName: user.name,
+              resetPasswordUrl,
+            },
+          })
+          .catch((error) => {
+            console.error(
+              '⭕️ ~ ERROR  ~ in auth_prisma: src/iam/authentication/authentication.service.ts ~> ❗',
+              error,
+            );
+          });
       });
       return `We sent reset password url to your email(${user.email}), Check your email and follow the instruction`;
     } catch (error) {
-      console.log(`✨ `, error);
       if (error instanceof HttpException) throw error;
       throw new InternalServerErrorException('Something went wrong');
     }
