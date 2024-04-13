@@ -37,7 +37,9 @@ export class AccessTokenGuard implements CanActivate {
         })
       );
       if (type !== 'access') throw new Error();
-      const user = await this.userService.getUserById(id);
+      const user = await this.userService.getUserById(id, {
+        scopes: true,
+      });
       // ? Check if user still exist
       if (!user) throw new Error();
 
