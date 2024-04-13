@@ -29,7 +29,7 @@ export class AccessTokenGuard implements CanActivate {
 
       if (!token) throw new Error();
 
-      const { type, id } = <AccessTokenPayload>(
+      const { type, id, iat } = <AccessTokenPayload>(
         await this.jwtService.verifyAsync(token, {
           secret: this.jwtConfigurations.secret,
           audience: this.jwtConfigurations.audience,
@@ -43,7 +43,10 @@ export class AccessTokenGuard implements CanActivate {
       // ? Check if user still exist
       if (!user) throw new Error();
 
-      // TODO: Check if user changed password after the token was issued
+      // > Check if user changed password after the access token was issued
+      const changePassAfterTokenIssued =
+        iat * 1000 <= user?.passwordUpdatedAt?.valueOf();
+      if (changePassAfterTokenIssued) throw new Error();
 
       req[REQUEST_USER_KEY] = user;
     } catch (error) {
