@@ -14,17 +14,31 @@ datasource db {
 }
 
 model User {
-  id                String          @id @default(uuid())
+  id                String            @id @default(uuid())
   name              String
-  email             String          @unique
+  email             String            @unique
   password          String
-  passwordUpdatedAt DateTime?
+  scopes            PermissionScope[]
+  role              Roles             @default(Regular)
   forgotPassword    ForgotPassword?
+  passwordUpdatedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
   @@index([email])
+}
+
+model PermissionScope {
+  id    String @id @default(uuid())
+  name  String @unique
+  users User[]
+}
+
+enum Roles {
+  SuperAdmin
+  Admin
+  Regular
 }
 
 model ForgotPassword {
