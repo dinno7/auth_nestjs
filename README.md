@@ -126,6 +126,7 @@ AuthTypes.ApiKey;
 - [ ] OTP login with email
 - [ ] Add global exception filter
 - [ ] Complete README.md
+- [ ] Remove the forgot-pass .ejs file and replace it with simple template
 
 ## License
 
