@@ -22,7 +22,7 @@
 - [Features](#features)
   - [Auth decorator:](#auth-decorator)
   - [Available Auth types:](#available-auth-types)
-- [Support](#support)
+- [To-dos](#to-dos)
 - [License](#license)
 
 ## What we have here?
@@ -119,11 +119,13 @@ AuthTypes.Bearer; // -> Appended to all routes by default
 AuthTypes.ApiKey;
 ```
 
-<!-- `@Auth(AuthTypes.Bearer)` -->
+## To-dos
 
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+- [ ] ApiKey auth system
+- [ ] Google OAuth2
+- [ ] OTP login with email
+- [ ] Add global exception filter
+- [ ] Complete README.md
 
 ## License
 
