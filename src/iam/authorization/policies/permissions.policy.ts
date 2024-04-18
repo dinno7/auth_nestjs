@@ -9,10 +9,12 @@ export function PermissionsPolicy(
   resource: PermissionResources,
 ): PolicyHandlerCallback {
   return function (user: User & { scopes: PermissionScope[] }) {
+    if (!user?.scopes?.length) return false;
+
     actions.forEach((action) => {
-      const hasAccess = user?.scopes
-        ?.map((s) => s.name)
-        ?.includes(`${action}_${resource}`);
+      const hasAccess = user.scopes
+        .map((s) => s.name)
+        .includes(`${action}_${resource}`);
 
       if (!hasAccess) {
         throw new ForbiddenException(
